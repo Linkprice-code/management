@@ -1,0 +1,7 @@
+# Upload and export data must not be pushed to a public Pages repository
+*.xlsx
+*.xlsm
+*.xls
+*백업*.json
+*광고계정*.csv
+*.zip
