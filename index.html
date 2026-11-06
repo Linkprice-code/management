@@ -81,6 +81,28 @@ body{word-break:keep-all;overflow-wrap:break-word}
 @media(max-width:760px){.work-legend-bar{padding:10px 14px}.table-hscroll-hint{white-space:normal}}
 @media print{#accountSection .account-table{table-layout:auto;min-width:0}.work-legend-bar{display:none!important}.work-select-wrap{border:0;background:transparent!important}.work-select-wrap:before,.work-select-wrap:after{display:none}.work-select-wrap .done-select{padding:4px 0;appearance:none}}
 
+
+/* Daily date archive: selecting a day changes figures and that day's work notes together. */
+.daily-panel{margin-top:19px;padding:18px 18px 15px;background:linear-gradient(145deg,#f7faff,#fefeff);border:1px solid #dfe8fb;border-radius:15px}
+.daily-heading{display:flex;align-items:flex-start;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.daily-heading h3{font-size:17px;margin:1px 0 7px;letter-spacing:-.045em;color:#1a3057}
+.daily-heading p{font-size:11px;line-height:1.7;color:#7485a2;margin:0}
+.daily-tip{white-space:nowrap;font-size:10px;font-weight:800;color:#496bd1;background:#e9efff;border:1px solid #d6e1ff;border-radius:50px;padding:8px 12px}
+.date-toolbar{display:flex;gap:9px;align-items:center;flex-wrap:wrap;margin:18px 0 9px}
+.date-btn{background:white;border:1px solid #d8e1f1;border-radius:9px;padding:10px 14px;color:#36558f;font-size:12px;font-weight:800;min-height:40px;white-space:nowrap}
+.date-btn:hover:not(:disabled){background:#eaf0ff;border-color:#b9caf2}
+.date-btn:disabled{opacity:.38;cursor:not-allowed}
+.date-btn.today{background:#e8f8f2;color:#16795f;border-color:#b5e4d3}
+.date-btn.today-active{box-shadow:0 0 0 2px #7bccae}
+.date-picker-label{display:inline-flex;align-items:center;gap:9px;padding:5px 11px;background:white;border:1px solid #b9c9e9;border-radius:9px;color:#64799c;font-weight:750;font-size:11px;min-height:40px;white-space:nowrap}
+.date-picker-label input{border:0;background:transparent;color:#243f76;min-width:133px;outline:none;cursor:pointer;font-size:13px;font-weight:800}
+.date-meta{font-size:11px;color:#6f809d;line-height:1.7;margin:7px 0 10px}
+.daily-panel .snapshot-bar{align-items:flex-start;margin-top:11px;padding-top:11px}
+.daily-panel .snapshot-list{flex:1 1 100%;display:flex;flex-wrap:nowrap;overflow-x:auto;max-width:100%;padding:2px 2px 9px;gap:8px;scrollbar-width:thin}
+.daily-panel .snapshot-btn{white-space:nowrap;flex:0 0 auto;font-size:11px;padding:9px 13px}
+.daily-panel .snapshot-btn.current{background:#375ed2;border-color:#375ed2;color:#fff}
+@media(max-width:760px){.daily-panel{padding:15px 12px}.date-toolbar{gap:7px}.date-picker-label{order:-1;flex-basis:100%;justify-content:space-between}.date-picker-label input{flex:1}.date-btn{flex:1;padding:10px 8px;font-size:11px}.daily-heading h3{font-size:16px}}
+
 </style>
 </head>
 <body class="empty-mode">
@@ -95,7 +117,12 @@ body{word-break:keep-all;overflow-wrap:break-word}
  <div class="upload-actions"><label class="drop" for="xlsxInput" id="dropZone"><strong>＋ &nbsp; 최신 엑셀 파일 선택 / 여기로 끌어놓기</strong><small>기존 네이버 추가수수료프로모션 원본 형식 · .xlsx / .xlsm</small></label><input id="xlsxInput" type="file" accept=".xlsx,.xlsm" hidden />
  <div class="upload-tools"><button class="mini-btn primary" id="backupBtn" type="button">전체 백업 JSON ↓</button><button class="mini-btn" id="restoreBtn" type="button">백업 복원 ↑</button><input id="restoreInput" type="file" accept=".json" hidden/><button class="mini-btn" id="noteCsvBtn" type="button">사유 포함 CSV ↓</button></div></div>
  <div id="uploadStatus" class="upload-status" role="status" aria-live="polite">파일을 올리면 2-3팀 소속 계정만 읽어 화면을 갱신합니다. 업로드 데이터는 GitHub 서버에 저장되지 않습니다.</div>
- <div class="snapshot-bar"><div><strong>최근 업로드 기록</strong><span>동일 브라우저 저장 · 최대 5개 · 이전 업로드 대비 증감 계산</span></div><div id="snapshotList" class="snapshot-list"><span class="subtle">저장된 기록 없음</span></div></div>
+ <section class="daily-panel" aria-label="날짜별 실적 조회">
+  <div class="daily-heading"><div><div class="eyebrow">DATE ARCHIVE / 날짜별 실적 기록</div><h3>조회할 날짜를 선택하세요</h3><p>엑셀의 <b>데이터 기준일</b>로 저장됩니다. 해당 날짜의 실적 · 사유 · 업무상태를 함께 불러옵니다.</p></div><span class="daily-tip">저장된 자료만 조회</span></div>
+  <div class="date-toolbar"><button type="button" class="date-btn" id="prevDateBtn" aria-label="이전 저장 날짜">‹ 이전 기록</button><label class="date-picker-label">기준일 <input id="datePicker" type="date" aria-label="조회할 실적 기준일" /></label><button type="button" class="date-btn" id="nextDateBtn" aria-label="다음 저장 날짜">다음 기록 ›</button><button type="button" class="date-btn today" id="todayBtn">오늘 날짜</button></div>
+  <p class="date-meta" id="dateMeta">아직 업로드된 날짜가 없습니다.</p>
+  <div class="snapshot-bar"><div><strong>저장된 날짜</strong><span>날짜를 누르면 해당 일자 실적과 사유·업무상태 표시 · 기존 5개 제한 해제</span></div><div id="snapshotList" class="snapshot-list"><span class="subtle">저장된 기록 없음</span></div></div>
+ </section>
 </section>
 <section class="hero">
  <div><div class="overline"><span class="line"></span> MONTHLY · REVENUE OPERATION</div><h1>매체·담당자 실적을 <span>한눈에.</span><br>부진 계정은 <span>바로 관리.</span></h1><p class="desc" id="heroDesc">최신 엑셀을 직접 업로드하면 김재현 팀 데이터만 자동 분석합니다.<br>계정별 조치 사유와 업무상태를 기록하고, 날짜별 변화를 확인하세요.</p></div>
@@ -112,17 +139,17 @@ body{word-break:keep-all;overflow-wrap:break-word}
 <section class="section" id="staffSection"><div class="section-header"><div><div class="eyebrow">02 / OWNER HEALTH CHECK</div><h2>매체별 상세계정 담당자 목표 달성</h2></div><p>부족액 순 · 목표가 있는 담당자 표시 · 이름 클릭 시 계정 조회</p></div><div class="card"><div class="staff-head"><span>담당자</span><span>전체 예상 차액</span><span>쇼핑검색광고</span><span>파워링크</span><span>GFA</span><span>관리</span></div><div class="staff-body" id="staffRows"></div></div><div class="alertline" id="memberWarning"></div></section>
 <section class="section" id="insightsSection"><div class="section-header"><div><div class="eyebrow">03 / MANAGEMENT FOCUS</div><h2>상세계정 기준 운영 인사이트</h2></div><p>개선 우선순위는 절대 부족액 기준 · 목표금액이 없는 계정 제외</p></div><div class="panel-grid"><div class="card panel"><h3 class="panel-title">담당자별 월말 예상 부족 / 초과액</h3><div id="ownerBars"></div><p class="panel-sub">왼쪽 명단의 예상 차액을 표시합니다. 빨강은 목표 부족, 파랑은 목표 초과입니다.</p></div><div class="card panel"><h3 class="panel-title">운영팀 실행 포인트</h3><div id="insights" class="insight-list"></div></div></div></section>
 <section class="section" id="actionSection"><div class="section-header"><div><div class="eyebrow">04 / FIRST ACTIONS</div><h2>매체별 우선 관리 광고계정</h2></div><p>누가 · 어떤 광고계정에서 · 얼마를 더 확보해야 하는가</p></div><div class="tri-grid" id="focusCards"></div></section>
-<section class="section" id="accountSection"><div class="section-header"><div><div class="eyebrow">05 / ACCOUNT ACTION BOARD</div><h2>광고계정별 실적 · 실행 관리</h2></div><p>계정ID·매체별 집계 · 사유 및 업무 상태는 업데이트 후에도 유지</p></div>
+<section class="section" id="accountSection"><div class="section-header"><div><div class="eyebrow">05 / ACCOUNT ACTION BOARD</div><h2>광고계정별 실적 · 실행 관리</h2></div><p>계정ID·매체별 집계 · 사유 및 업무상태는 선택한 날짜별로 각각 보관</p></div>
  <div class="card table-card">
   <div class="filters"><input id="q" class="search" placeholder="광고주명 · 계정 ID 검색" aria-label="광고주명 또는 계정 ID"/><select id="ownerFilter" aria-label="담당자 필터"><option value="">담당자 전체</option></select><select id="channelFilter" aria-label="매체 필터"><option value="">매체 전체</option><option value="쇼핑검색광고">쇼핑검색광고</option><option value="파워링크">파워링크</option><option value="GFA">GFA</option></select><select id="statusFilter" aria-label="성과 필터"><option value="under">목표 미달</option><option value="critical">달성률 80% 미만</option><option value="down">최근 평일 하락</option><option value="over">목표 달성</option><option value="all">목표 설정 계정 전체</option><option value="inactive">목표 0/음수 계정</option></select><select id="sortFilter" aria-label="정렬 기준"><option value="deficit">부족액 큰 순</option><option value="attain">달성률 낮은 순</option><option value="forecast">예상 매출 큰 순</option><option value="growth">초과액 큰 순</option><option value="trend">최근 평일 하락 큰 순</option></select><button id="resetBtn" class="mini-btn">초기화</button><button id="csvBtn" class="mini-btn">CSV 내보내기 ↓</button></div>
   <div class="work-legend-bar"><div class="work-legend"><strong>업무상태 구분</strong><span class="legend-state state-not-started">미착수</span><span class="legend-state state-in-progress">진행중</span><span class="legend-state state-done">완료</span></div><span class="table-hscroll-hint">표의 나머지 항목은 좌우로 스크롤하여 확인 ↔</span></div>
-  <div class="table-scroll"><table class="account-table"><colgroup><col style="width:202px"><col style="width:89px"><col style="width:114px"><col style="width:112px"><col style="width:118px"><col style="width:170px"><col style="width:124px"><col style="width:128px"><col style="width:119px"><col style="width:189px"><col style="width:286px"><col style="width:124px"></colgroup><thead><tr><th>광고주 / 광고계정 ID</th><th>담당자</th><th>매체</th><th class="num">10월 매출</th><th class="num">11월 목표</th><th class="num">11월 예상</th><th class="num">예상 차액</th><th class="num">달성률</th><th>최근 평일 추이</th><th>점검 방향</th><th style="min-width:240px">사유 / 조치 메모</th><th>업무상태</th></tr></thead><tbody id="accountTbody"></tbody></table></div>
+  <div class="table-scroll"><table class="account-table"><colgroup><col style="width:202px"><col style="width:89px"><col style="width:114px"><col style="width:112px"><col style="width:118px"><col style="width:170px"><col style="width:124px"><col style="width:128px"><col style="width:119px"><col style="width:189px"><col style="width:286px"><col style="width:124px"></colgroup><thead><tr><th>광고주 / 광고계정 ID</th><th>담당자</th><th>매체</th><th class="num" id="prevRevenueHeader">전월 매출</th><th class="num" id="targetRevenueHeader">당월 목표</th><th class="num" id="forecastRevenueHeader">당월 예상</th><th class="num">예상 차액</th><th class="num">달성률</th><th>최근 평일 추이</th><th>점검 방향</th><th style="min-width:240px">사유 / 조치 메모</th><th>업무상태</th></tr></thead><tbody id="accountTbody"></tbody></table></div>
   <div class="table-foot"><span id="tableCount">—</span><div class="pager"><button id="prevBtn">이전</button><span id="pageLabel" style="padding:8px 9px"></span><button id="nextBtn">다음</button></div></div>
  </div>
 </section>
-<section class="section" id="methodSection"><div class="section-header"><div><div class="eyebrow">06 / METHODOLOGY & NOTES</div><h2>집계 기준 및 저장 안내</h2></div></div><div class="note-box"><span style="font-size:19px;line-height:1">ⓘ</span><div id="methodText">① 원본 매체별 시트에서 서울2-3팀(김재현) 계정만 집계하며, 최연아·안희성은 항상 제외합니다. ② 당월 예상은 파일 원본 값이며 확정 매출이 아닙니다. ③ ‘매출’은 매체별 수수료 프로모션 매출 지표로 광고주 전환매출과 다릅니다. ④ 업로드한 엑셀은 서버로 전송하지 않고 이 브라우저에서 처리합니다. ⑤ 사유·업무상태·업로드 이력은 이 브라우저에만 저장됩니다. 다른 PC와 자동 공유되지 않습니다. 중요한 내용은 백업 파일로 보관하세요.</div></div></section>
+<section class="section" id="methodSection"><div class="section-header"><div><div class="eyebrow">06 / METHODOLOGY & NOTES</div><h2>집계 기준 및 저장 안내</h2></div></div><div class="note-box"><span style="font-size:19px;line-height:1">ⓘ</span><div id="methodText">① 원본 매체별 시트에서 서울2-3팀(김재현) 계정만 집계하며, 최연아·안희성은 항상 제외합니다. ② 당월 예상은 파일 원본 값이며 확정 매출이 아닙니다. ③ ‘매출’은 매체별 수수료 프로모션 매출 지표로 광고주 전환매출과 다릅니다. ④ 업로드한 엑셀은 서버로 전송하지 않고 이 브라우저에서 처리합니다. ⑤ 날짜별 실적 스냅샷과 사유·업무상태는 이 브라우저에만 독립 저장됩니다. 업로드하지 않은 날짜는 조회할 수 없습니다. 다른 PC와 자동 공유되지 않습니다. 중요한 내용은 백업 파일로 보관하세요.</div></div></section>
 <footer class="footer"><span>2-3 TEAM · SALES OPERATIONS</span><span>업로드 원본 기반 · 내부 운영관리용 · 로컬 브라우저 저장</span></footer>
 </div>
-<script src="./app.js?v=20261106-ui2"></script>
+<script src="./app.js?v=20261106-daily1"></script>
 </body>
 </html>
